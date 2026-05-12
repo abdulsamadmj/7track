@@ -12,7 +12,7 @@ function getConfig() {
         documents: [
           "./app/**/*.{js,ts,jsx,tsx}",
           "./app/.server/**/*.{js,ts,jsx,tsx}",
-          "./app/graphql/**/*.graphql",
+          "./app/queries/**/*.graphql",
         ],
         outputDir: "./app/types",
       }),

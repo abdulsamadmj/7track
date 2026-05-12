@@ -1,0 +1,77 @@
+query ShipmentsList(
+  $first: Int!
+  $after: String
+  $query: String
+  $sortKey: FulfillmentOrderSortKeys = ID
+  $reverse: Boolean = false
+  $includeClosed: Boolean!
+) {
+  fulfillmentOrders(
+    first: $first
+    after: $after
+    query: $query
+    sortKey: $sortKey
+    reverse: $reverse
+    includeClosed: $includeClosed
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        orderName
+        status
+        requestStatus
+        createdAt
+        updatedAt
+        order {
+          id
+          name
+          processedAt
+          tags
+        }
+        destination {
+          city
+          countryCode
+          province
+          zip
+        }
+        assignedLocation {
+          location {
+            id
+            name
+          }
+        }
+        fulfillments(first: 1, reverse: true) {
+          edges {
+            node {
+              id
+              status
+              createdAt
+              inTransitAt
+              deliveredAt
+              estimatedDeliveryAt
+              trackingInfo(first: 1) {
+                company
+                number
+                url
+              }
+              events(first: 1, sortKey: HAPPENED_AT, reverse: true) {
+                edges {
+                  node {
+                    status
+                    happenedAt
+                    message
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
