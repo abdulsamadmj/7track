@@ -9,7 +9,11 @@ function getConfig() {
       default: shopifyApiProject({
         apiType: ApiType.Admin,
         apiVersion: ApiVersion.October25,
-        documents: ["./app/**/*.{js,ts,jsx,tsx}", "./app/.server/**/*.{js,ts,jsx,tsx}"],
+        documents: [
+          "./app/**/*.{js,ts,jsx,tsx}",
+          "./app/.server/**/*.{js,ts,jsx,tsx}",
+          "./app/graphql/**/*.graphql",
+        ],
         outputDir: "./app/types",
       }),
     },
