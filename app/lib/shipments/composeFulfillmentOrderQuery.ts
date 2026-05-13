@@ -24,6 +24,8 @@ export type ComposeFulfillmentOrderQueryInput = {
   fulfillmentOrderStatuses: string[];
   /** Assigned location GIDs (OR group). */
   assignedLocationIds: string[];
+  /** When true, append `status:CLOSED` (AND) for archived-only lists. */
+  closedFulfillmentOrdersOnly?: boolean;
 };
 
 /**
@@ -49,6 +51,10 @@ export function composeFulfillmentOrderQuery(input: ComposeFulfillmentOrderQuery
     parts.push(`assigned_location_id:${locs[0]}`);
   } else if (locs.length > 1) {
     parts.push(`(${locs.map((id) => `assigned_location_id:${id}`).join(" OR ")})`);
+  }
+
+  if (input.closedFulfillmentOrdersOnly) {
+    parts.push("status:CLOSED");
   }
 
   if (parts.length === 0) return null;

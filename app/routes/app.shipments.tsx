@@ -5,7 +5,6 @@ import type { AppliedFilterInterface, IndexTableProps } from "@shopify/polaris";
 import {
   ActionList,
   Badge,
-  Banner,
   BlockStack,
   Box,
   Button,
@@ -27,7 +26,7 @@ import {
   Tooltip,
   useIndexResourceState,
 } from "@shopify/polaris";
-import { FilterIcon, LayoutColumns3Icon, SearchIcon, SortIcon } from "@shopify/polaris-icons";
+import { FilterIcon, ChevronDownIcon, LayoutColumns3Icon, SearchIcon, SortIcon } from "@shopify/polaris-icons";
 
 import { PolarisAppShell } from "../components/PolarisAppShell";
 import { createApiClient } from "../lib/api/apiClient";
@@ -233,7 +232,7 @@ export default function ShipmentsPage() {
   const [sortSelected, setSortSelected] = useState<string[]>(["UPDATED_AT desc"]);
   const { sortKey, reverse } = parseSortSelected(sortSelected);
 
-  const [archived, setArchived] = useState(true);
+  const [listScope, setListScope] = useState<"active" | "archived">("active");
 
   const [filterFoStatuses, setFilterFoStatuses] = useState<string[]>([]);
   const [filterLocationIds, setFilterLocationIds] = useState<string[]>([]);
@@ -250,7 +249,7 @@ export default function ShipmentsPage() {
   const [primaryFilterOpen, setPrimaryFilterOpen] = useState<PrimaryFilterKey | null>(null);
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
-  const [row1MoreOpen, setRow1MoreOpen] = useState(false);
+  const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
 
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() => defaultColumnVisibility());
   const [draftColumnVisibility, setDraftColumnVisibility] = useState<ColumnVisibility>(() => defaultColumnVisibility());
@@ -276,7 +275,7 @@ export default function ShipmentsPage() {
       "shipments",
       {
         query,
-        archived,
+        listScope,
         sortKey,
         reverse,
         foStatuses: filterFoStatuses,
@@ -289,7 +288,7 @@ export default function ShipmentsPage() {
         first: PAGE_SIZE,
         after: pageParam,
         query,
-        archived,
+        listScope,
         sortKey,
         reverse,
         fulfillmentOrderStatuses: filterFoStatuses,
@@ -378,6 +377,7 @@ export default function ShipmentsPage() {
   }, [
     tabBucket,
     query,
+    listScope,
     sortKey,
     reverse,
     filterFoStatuses,
@@ -400,7 +400,7 @@ export default function ShipmentsPage() {
     setFilterRequestStatuses([]);
     setFilterTags([]);
     setFilterCarriers([]);
-    setArchived(true);
+    setListScope("active");
     setTabIndex(0);
   }, []);
 
@@ -498,9 +498,83 @@ export default function ShipmentsPage() {
 
   const listLoading = infinite.isPending && !infinite.isFetchingNextPage;
 
+  const pageTitleLabel = listScope === "archived" ? "Archived shipments" : "Shipments";
+
   return (
     <PolarisAppShell>
-      <Page title="Shipments" subtitle="Fulfillment orders from your shop">
+      <Page
+        title=""
+        pageReadyAccessibilityLabel={pageTitleLabel}
+        subtitle="Fulfillment orders from your shop"
+        titleMetadata={
+          <Popover
+            active={scopeMenuOpen}
+            preferredPosition="below"
+            autofocusTarget="first-node"
+            onClose={() => setScopeMenuOpen(false)}
+            activator={
+              <button
+                type="button"
+                aria-expanded={scopeMenuOpen}
+                aria-haspopup="true"
+                onClick={() => setScopeMenuOpen((o) => !o)}
+                style={{
+                  border: "none",
+                  margin: 0,
+                  padding: 0,
+                  background: "none",
+                  cursor: "pointer",
+                  color: "inherit",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "var(--p-space-100)",
+                }}
+              >
+                <Text as="span" variant="headingLg" fontWeight="bold">
+                  {pageTitleLabel}
+                </Text>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    transform: scopeMenuOpen ? "rotate(180deg)" : "none",
+                    transition: "transform var(--p-motion-duration-100) var(--p-motion-ease)",
+                  }}
+                >
+                  <Icon source={ChevronDownIcon} tone="base" />
+                </span>
+              </button>
+            }
+          >
+            <ActionList
+              sections={[
+                {
+                  items: [
+                    {
+                      content: "Shipments",
+                      active: listScope === "active",
+                      onAction: () => {
+                        setListScope("active");
+                        setFilterFoStatuses([]);
+                        setScopeMenuOpen(false);
+                      },
+                    },
+                    {
+                      content: "Archived shipments",
+                      active: listScope === "archived",
+                      onAction: () => {
+                        setListScope("archived");
+                        setFilterFoStatuses([]);
+                        setScopeMenuOpen(false);
+                      },
+                    },
+                  ],
+                },
+              ]}
+            />
+          </Popover>
+        }
+      >
         <Layout>
           <Layout.Section>
             <Box>
@@ -554,7 +628,7 @@ export default function ShipmentsPage() {
                                 setPrimaryFilterOpen((p) => (p === "foStatus" ? null : "foStatus"));
                                 setMoreFiltersOpen(false);
                                 setSortOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             >
                               {filterFoStatuses.length ? `Status (${filterFoStatuses.length})` : "Status"}
@@ -584,7 +658,7 @@ export default function ShipmentsPage() {
                                 setPrimaryFilterOpen((p) => (p === "origin" ? null : "origin"));
                                 setMoreFiltersOpen(false);
                                 setSortOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             >
                               {filterOriginCountries.length
@@ -619,7 +693,7 @@ export default function ShipmentsPage() {
                                 setPrimaryFilterOpen((p) => (p === "destination" ? null : "destination"));
                                 setMoreFiltersOpen(false);
                                 setSortOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             >
                               {filterDestinations.length
@@ -654,7 +728,7 @@ export default function ShipmentsPage() {
                                 setPrimaryFilterOpen((p) => (p === "locations" ? null : "locations"));
                                 setMoreFiltersOpen(false);
                                 setSortOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             >
                               {filterLocationIds.length
@@ -681,13 +755,12 @@ export default function ShipmentsPage() {
                           activator={
                             <Button
                               size="slim"
-                              disabled
                               icon={FilterIcon}
                               onClick={() => {
                                 setMoreFiltersOpen((o) => !o);
                                 setPrimaryFilterOpen(null);
                                 setSortOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             />
                           }
@@ -730,12 +803,6 @@ export default function ShipmentsPage() {
                                   selected={filterCarriers}
                                   onChange={setFilterCarriers}
                                 />
-                                <ChoiceList
-                                  title="Fulfillment orders"
-                                  choices={[{ label: "Hide closed fulfillment orders", value: "open" }]}
-                                  selected={archived ? [] : ["open"]}
-                                  onChange={(v) => setArchived(!v.includes("open"))}
-                                />
                               </BlockStack>
                             </Box>
                           </div>
@@ -752,7 +819,7 @@ export default function ShipmentsPage() {
                                 setSortOpen((o) => !o);
                                 setPrimaryFilterOpen(null);
                                 setMoreFiltersOpen(false);
-                                setRow1MoreOpen(false);
+                                setScopeMenuOpen(false);
                               }}
                             />
                           }
@@ -780,7 +847,7 @@ export default function ShipmentsPage() {
                               setPrimaryFilterOpen(null);
                               setMoreFiltersOpen(false);
                               setSortOpen(false);
-                              setRow1MoreOpen(false);
+                              setScopeMenuOpen(false);
                             }}
                           />
                         </Tooltip>

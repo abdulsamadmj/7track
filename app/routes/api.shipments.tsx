@@ -36,18 +36,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
   const after = url.searchParams.get("after");
   const searchQuery = url.searchParams.get("query")?.trim() ?? "";
-  const archived = url.searchParams.get("archived") === "1";
+  const listScope = url.searchParams.get("list") === "archived" ? "archived" : "active";
   const reverse = url.searchParams.get("reverse") === "1";
   const sortKeyParam = url.searchParams.get("sortKey") ?? "ID";
   const sortKeyStr = ALLOWED_SORT_KEYS.has(sortKeyParam) ? sortKeyParam : "ID";
 
-  const foStatuses = url.searchParams.getAll("foStatus").map((s) => s.trim()).filter(Boolean);
+  const foStatusesRaw = url.searchParams.getAll("foStatus").map((s) => s.trim()).filter(Boolean);
+  /** Archived list uses a fixed CLOSED filter; ignore status query params there to avoid conflicts. */
+  const foStatuses = listScope === "archived" ? [] : foStatusesRaw;
   const locationIds = url.searchParams.getAll("loc").map((s) => s.trim()).filter(Boolean);
 
   const composedQuery = composeFulfillmentOrderQuery({
     search: searchQuery,
     fulfillmentOrderStatuses: foStatuses,
     assignedLocationIds: locationIds,
+    closedFulfillmentOrdersOnly: listScope === "archived",
   });
 
   const variables: ShipmentsListQueryVariables = {
@@ -56,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     query: composedQuery,
     sortKey: sortKeyStr as AdminTypes.FulfillmentOrderSortKeys,
     reverse,
-    includeClosed: archived,
+    includeClosed: listScope === "archived",
   };
 
   const response = await admin.graphql(FULFILLMENT_ORDERS_LIST_QUERY, {

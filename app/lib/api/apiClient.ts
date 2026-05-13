@@ -12,7 +12,8 @@ export type ShipmentsListPageParams = {
   first: number;
   after: string | null;
   query: string;
-  archived: boolean;
+  /** Active (non-closed) vs archived (closed fulfillment orders only). */
+  listScope: "active" | "archived";
   sortKey: string;
   reverse: boolean;
   /** Sent as repeated `foStatus` query params (Shopify FO status). */
@@ -52,7 +53,7 @@ export function createApiClient() {
         sp.set("first", String(params.first));
         if (params.after) sp.set("after", params.after);
         if (params.query.trim()) sp.set("query", params.query.trim());
-        if (params.archived) sp.set("archived", "1");
+        if (params.listScope === "archived") sp.set("list", "archived");
         if (params.reverse) sp.set("reverse", "1");
         sp.set("sortKey", params.sortKey);
         for (const s of params.fulfillmentOrderStatuses) {
