@@ -43,6 +43,9 @@ query ShipmentsList(
           location {
             id
             name
+            address {
+              countryCode
+            }
           }
         }
         fulfillments(first: 1, reverse: true) {
