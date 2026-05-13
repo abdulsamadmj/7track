@@ -7,6 +7,7 @@ import type {
   ShipmentsListQueryVariables,
 } from "../types/admin.generated";
 import type * as AdminTypes from "../types/admin.types";
+import { composeFulfillmentOrderQuery } from "../lib/shipments/composeFulfillmentOrderQuery";
 
 const MAX_FIRST = 50;
 const DEFAULT_FIRST = 20;
@@ -40,10 +41,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const sortKeyParam = url.searchParams.get("sortKey") ?? "ID";
   const sortKeyStr = ALLOWED_SORT_KEYS.has(sortKeyParam) ? sortKeyParam : "ID";
 
+  const foStatuses = url.searchParams.getAll("foStatus").map((s) => s.trim()).filter(Boolean);
+  const locationIds = url.searchParams.getAll("loc").map((s) => s.trim()).filter(Boolean);
+
+  const composedQuery = composeFulfillmentOrderQuery({
+    search: searchQuery,
+    fulfillmentOrderStatuses: foStatuses,
+    assignedLocationIds: locationIds,
+  });
+
   const variables: ShipmentsListQueryVariables = {
     first,
     after: after && after.length > 0 ? after : null,
-    query: searchQuery.length > 0 ? searchQuery : null,
+    query: composedQuery,
     sortKey: sortKeyStr as AdminTypes.FulfillmentOrderSortKeys,
     reverse,
     includeClosed: archived,

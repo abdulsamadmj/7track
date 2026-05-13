@@ -15,6 +15,10 @@ export type ShipmentsListPageParams = {
   archived: boolean;
   sortKey: string;
   reverse: boolean;
+  /** Sent as repeated `foStatus` query params (Shopify FO status). */
+  fulfillmentOrderStatuses: string[];
+  /** Sent as repeated `loc` query params (Location GID). */
+  assignedLocationIds: string[];
 };
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -51,6 +55,12 @@ export function createApiClient() {
         if (params.archived) sp.set("archived", "1");
         if (params.reverse) sp.set("reverse", "1");
         sp.set("sortKey", params.sortKey);
+        for (const s of params.fulfillmentOrderStatuses) {
+          if (s.trim()) sp.append("foStatus", s.trim());
+        }
+        for (const id of params.assignedLocationIds) {
+          if (id.trim()) sp.append("loc", id.trim());
+        }
 
         const url = `${apiPaths.shipments}?${sp.toString()}`;
         return requestJson<ShipmentsListQuery>(url);
