@@ -1,5 +1,5 @@
 /**
- * Maps latest FulfillmentEvent.status (and tracking presence) to 17track-style buckets.
+ * Maps latest FulfillmentEvent.status (and tracking presence) to 7track-style buckets.
  * Tab counts and tab filtering apply to data already loaded in the client (see UX copy on page).
  */
 

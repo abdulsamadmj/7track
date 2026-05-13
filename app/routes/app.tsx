@@ -30,7 +30,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <s-app-nav>
           <s-link href="/app/shipments">Shipments</s-link>
-          <s-link href="/app/tracking">Tracking</s-link>
+          <s-link href="/app/tracking">Tracking Page</s-link>
           <s-link href="/app/notifications">Notifications</s-link>
         </s-app-nav>
         <Outlet />
